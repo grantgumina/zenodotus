@@ -1,6 +1,6 @@
 /*
 * Description:
-*   Store all links posted into a chat into a database
+*   Store all links posted into a chat into a database 
 *
 * Commands:
 *   None
