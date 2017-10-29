@@ -12,7 +12,8 @@ module.exports = function(robot) {
     
     robot.hear(urlRegex, function(msg) {
         // msg.send('I found a link: ' + msg.match[0]);
-        console.log(msg.robot.server);
+        console.log(msg);
+        var user = msg.user;
         var domain = msg.robot.server.domain || "shell.com";
         var room = msg.message.room;
         var id = msg.message.id;
