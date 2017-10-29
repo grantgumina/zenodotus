@@ -12,11 +12,12 @@ module.exports = function(robot) {
     
     robot.hear(urlRegex, function(msg) {
         // msg.send('I found a link: ' + msg.match[0]);
-        var room = msg.server.domain;
+        console.log(msg.robot.server);
+        var domain = msg.robot.server.domain || "shell.com";
         var room = msg.message.room;
         var id = msg.message.id;
 
-        var deeplink = 'pp__' + domain + '/channel/' + room + '?msg=' + id;
+        var deeplink = domain + '/channel/' + room + '?msg=' + id;
         msg.send('deeplink: ' + deeplink);
     });
 }
