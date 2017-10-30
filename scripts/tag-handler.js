@@ -24,9 +24,42 @@ class TagHandler {
     constructor(robot) {
         this.robot = robot;
         robot.brain.data.tags = [];
+        robot.brain.data.links = {};
+        robot.respond(/tag-link (.*) (.*)/i, this.tagLink);
         robot.respond(/create-tag (.*)/i, this.createTag);
         robot.respond(/delete-tag (.*)/i, this.deleteTag);
         robot.respond(/list-tags/i, this.listTags);
+    }
+
+    tagLink(msg) {
+        let url = msg.match[1];
+        let newTag = msg.match[2];
+        let sender = msg.message.user;
+        let date = new Date();
+        // todo - strip down link to basic form
+        
+        // Check if this link is brand new
+        if (!this.robot.brain.data.links[url]) {
+            var newLink = {
+                sender: sender,
+                tags: [newTag],
+                date: date
+            };
+
+            this.robot.brain.data.links[url] = newLink;
+        } else {
+            // Check if link has already been tagged
+            if (this.robot.brain.data.links[url].tags.indexOf(newTag) != -1) {
+                return msg.send('Link has already been tagged with "' + newTag + '"');
+            }
+
+            // Add new tag to the existing link
+            this.robot.brain.data.links[url].tags.push(newTag);
+        }
+
+        msg.send('Link tagged');        
+        console.log(this.robot.brain.data.links);
+
     }
 
     createTag(msg) {
@@ -70,7 +103,6 @@ class TagHandler {
 
         msg.send('Here are the tags available:\n' + tagsString);
     }
-
 }
 
 module.exports = function(robot) {
