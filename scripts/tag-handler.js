@@ -23,8 +23,6 @@ class TagHandler {
 
     constructor(robot) {
         this.robot = robot;
-        robot.brain.data.tags = [];
-        robot.brain.data.links = {};
         robot.respond(/tag-link (.*) (.*)/i, this.tagLink);
         robot.respond(/create-tag (.*)/i, this.createTag);
         robot.respond(/delete-tag (.*)/i, this.deleteTag);
@@ -80,8 +78,19 @@ class TagHandler {
         if (indexOfTag == -1) {
             return msg.send('Tag "' + tagName + '" does not exist.');
         }
-
+        
+        // Remove tag from tags
         this.robot.brain.data.tags.splice(indexOfTag, 1);
+
+        // Remove tag from links...
+        let links = this.robot.brain.data.links;
+        for (var link in links) {
+            if (tagName in links[link].tags) {
+                let indexOfTagInsideLink = links[link].tags.indexOf(tagName);
+                links[link].tags.splice(indexOfTagInsideLink, 1);
+            }
+        }
+
         msg.send('Tag deleted: ' + tagName);
     }
 
