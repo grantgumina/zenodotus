@@ -19,28 +19,8 @@
 *   <github username of the original script author>
 */
 
-function extract(regex, text) {
-    // found on stackoverflow
-    var foundItems = text.match(regex);
-    foundItems = foundItems ? foundItems : [];
-    
-    foundItems.forEach(function(item, index) {
-        foundItems[index] = item.trim();
-    });
-    
-    return foundItems;
-}
-
-function extractLinks(messageText) {
-    let urlRegex = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
-    // "(^|[ \t\r\n])((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))" ,
-    return extract(urlRegex, messageText);
-}
-
-function extractTags(messageText) {
-    let tagRegex = /%([^\s][^0-9][a-z]*)/g;
-    return extract(tagRegex, messageText);
-}
+const StorageManager = require('./Utilities/StorageManager.js');
+const Helpers = require('./Utilities/Helpers.js');
 
 class LinkPostedHandler {
 
@@ -59,8 +39,8 @@ class LinkPostedHandler {
         let room = msg.message.room;
         let id = msg.message.id;
 
-        let links = extractLinks(msg.message.text);
-        let tags = extractTags(msg.message.text);
+        let links = Helpers.extractLinks(msg.message.text);
+        let tags = Helpers.extractTags(msg.message.text);
 
         var self = this;
         // Add tags to link
@@ -69,14 +49,14 @@ class LinkPostedHandler {
             if (!self.robot.brain.data.links[link]) {
                 self.robot.brain.data.links[link] = { tags: [] };
             }
-            
+            console.log(self.robot.brain.data.links[link].tags);
             // Iterate through the tags and add it if it doesn't exist
             tags.forEach(function(tag, index) {
-                if (!(tag in self.robot.brain.data.links[link].tags)) {
+                if (self.robot.brain.data.links[link].tags.indexOf(tag) == -1) {
                     self.robot.brain.data.links[link].tags.push(tag);
                 }
 
-                if (!(tag in self.robot.brain.data.tags)) {
+                if (self.robot.brain.data.tags.indexOf(tag) == -1) {
                     self.robot.brain.data.tags.push(tag);
                 }
             });
@@ -93,13 +73,25 @@ class LinkPostedHandler {
         let lastLink = keys[keys.length - 1];
 
         for (var link in links) {
+            let linkObject = links[link];
+            
+            // Get tags for the link
+            var tagString = "";
+            let tags = linkObject.tags
+            for (var tagIndex in tags) {
+                let tag = tags[tagIndex];
+                tagString += tag + ' ';
+            }
+
+            // Create the string
             if (link == lastLink) {
                 linkString += link;
+                linkString += ' [ ' + tagString + '], ';
             } else {
-                linkString += link + ', ';
+                linkString += link + ' [' + tagString + ']' + ', ';
             }
-        }
-        
+        }        
+
         msg.send('Here are the links you\'ve saved: ' + linkString);
     }
 
