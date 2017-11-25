@@ -30,7 +30,6 @@ class MessageHandler {
         
         robot.hear(urlRegex, this.storeMessage);
         robot.respond(/list-links/i, this.listLinks);
-        robot.respond(/delete-link (.*)/i, this.deleteLink);
     }
 
     storeMessage(msg) {
@@ -66,7 +65,7 @@ class MessageHandler {
             // Create tagged-links entries          
             let allLinkIds = data.linkIds.new.concat(data.linkIds.old);
             let allTagIds = data.tagIds.new.concat(data.tagIds.old);
-            
+
             return StorageManager.createTaggedLinks(allLinkIds, allTagIds);
         }).catch(error => {
             console.log(error);
@@ -103,10 +102,6 @@ class MessageHandler {
         }        
 
         msg.send('Here are the links you\'ve saved: ' + linkString);
-    }
-
-    deleteLink(msg) {
-        msg.send('Link deleted');
     }
 }
 

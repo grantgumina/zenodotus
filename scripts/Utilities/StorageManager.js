@@ -8,6 +8,7 @@ class StorageManager {
         this.db = pgp(process.env.DATABASE_URL);
     }
 
+    // Create methods
     createMessage(messageBody) {
         return this.db.one('INSERT INTO messages(body) VALUES ($1) RETURNING id', [messageBody]).then(data => {
             return data.id;
@@ -25,7 +26,6 @@ class StorageManager {
     }
 
     createTaggedMessage(messageId, tagIds) {
-        // Do an efficient insert - https://stackoverflow.com/questions/37300997/multi-row-insert-with-pg-promise
         var rowsToInsert = [];
         
         tagIds.forEach(tagId => {
@@ -83,14 +83,48 @@ class StorageManager {
         });
     }
 
+    // Delete methods
+    deleteTag(tagName) {
+
+        var returnObject = {
+            taggedLinksRowsDeleted: 0,
+            taggedMessagesRowsDeleted: 0,
+            tagsRowsDeleted: 0
+        };
+
+        // Find tagId
+        return this.db.any('SELECT id FROM "tags" WHERE "name" = $1', [tagName]).then(data => {
+            return data[0].id;
+        }).then(id => {
+            // Delete all tagged-links
+            return this.db.result('DELETE FROM "tagged-links" WHERE "tagid" = $1', id).then(result => {
+                returnObject.taggedLinksRowsDeleted = result.rowCount;
+                
+                // Delete all tagged-messages 
+                return this.db.result('DELETE FROM "tagged-messages" WHERE "tagid" = $1', id);
+            }).then(result => {
+                returnObject.taggedMessagesRowsDeleted = result.rowCount;
+                
+                // Delete tag row
+                return this.db.result('DELETE FROM "tags" WHERE "id" = $1', id);
+            }).then(result => {
+                returnObject.tagsRowsDeleted = result.rowCount;
+            });
+        }).then(() => {
+            return returnObject;
+        }).catch(error => {
+            return error;
+        });
+    }
+
+    // Helper methods
     bulkInsert(columnNames, tableName, rows) {
+        // Do an efficient insert - https://stackoverflow.com/questions/37300997/multi-row-insert-with-pg-promise
         const cs = new pgp.helpers.ColumnSet(columnNames, {table: tableName});
         const query = pgp.helpers.insert(rows, cs) + 'RETURNING id';
         
         return this.db.map(query, [], a => +a.id).then(newlyInsertedValueIds => {
             return newlyInsertedValueIds;
-        }).catch(error => {
-            return console.error('Error with query:\n', error.message, error.stack);
         });
     }
 
@@ -132,15 +166,9 @@ class StorageManager {
                     old: preExistingIds
                 }
                 return returnObject;
-            }).catch(error => {
-                return console.error('Error with query:\n', error.message, error.stack);
             });
-
-        }).catch(error => {
-            return console.error('Error with query:\n', error.message, error.stack);
         });
     }
-
 };
 
 module.exports = new StorageManager();
