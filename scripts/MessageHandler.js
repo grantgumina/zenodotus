@@ -22,44 +22,54 @@
 const StorageManager = require('./Utilities/StorageManager.js');
 const Helpers = require('./Utilities/Helpers.js');
 
-class LinkPostedHandler {
+class MessageHandler {
 
     constructor(robot) {
         this.robot = robot;
         let urlRegex = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i;
         
-        robot.hear(urlRegex, this.storeLink);
+        robot.hear(urlRegex, this.storeMessage);
         robot.respond(/list-links/i, this.listLinks);
         robot.respond(/delete-link (.*)/i, this.deleteLink);
     }
 
-    storeLink(msg) {
+    storeMessage(msg) {
         let user = msg.user;
         let domain = msg.robot.server.domain || "shouting.online";
         let room = msg.message.room;
         let id = msg.message.id;
+        let body = msg.message.text;
 
         let links = Helpers.extractLinks(msg.message.text);
         let tags = Helpers.extractTags(msg.message.text);
 
         var self = this;
-        // Add tags to link
-        links.forEach(function(link, index) {
-            // Create new link entry if one doesn't already exist
-            if (!self.robot.brain.data.links[link]) {
-                self.robot.brain.data.links[link] = { tags: [] };
-            }
-            console.log(self.robot.brain.data.links[link].tags);
-            // Iterate through the tags and add it if it doesn't exist
-            tags.forEach(function(tag, index) {
-                if (self.robot.brain.data.links[link].tags.indexOf(tag) == -1) {
-                    self.robot.brain.data.links[link].tags.push(tag);
-                }
 
-                if (self.robot.brain.data.tags.indexOf(tag) == -1) {
-                    self.robot.brain.data.tags.push(tag);
-                }
+        Promise.all([StorageManager.createMessage(body), 
+            StorageManager.createTags(tags), 
+            StorageManager.createLinks(links)])
+        .then(function([messageId, tagIds, linkIds]) {
+            console.log('messageId: ', messageId);
+            console.log('tagIds: ', tagIds.new, tagIds.old);
+            console.log('linkIds: ', linkIds.new, linkIds.old);
+
+            // Create tagged-messages entries
+            let allTagIds = tagIds.new.concat(tagIds.old);
+            return StorageManager.createTaggedMessage(messageId, allTagIds).then(insertedIds => {
+                return {
+                    tagIds: tagIds,
+                    linkIds: linkIds
+                };
             });
+
+        }).then(data => {
+            // Create tagged-links entries          
+            let allLinkIds = data.linkIds.new.concat(data.linkIds.old);
+            let allTagIds = data.tagIds.new.concat(data.tagIds.old);
+            
+            return StorageManager.createTaggedLinks(allLinkIds, allTagIds);
+        }).catch(error => {
+            console.log(error);
         });
 
         let deeplink = domain + '/channel/' + room + '?msg=' + id;
@@ -101,5 +111,5 @@ class LinkPostedHandler {
 }
 
 module.exports = function(robot) {
-    return new LinkPostedHandler(robot);
+    return new MessageHandler(robot);
 }
