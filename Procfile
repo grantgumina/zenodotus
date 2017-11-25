@@ -1,2 +1,2 @@
-web: bin/hubot -a rocketchat
-shell: bin/hubot --name zeno
+bot: bin/hubot -a rocketchat
+web: node bin/www
