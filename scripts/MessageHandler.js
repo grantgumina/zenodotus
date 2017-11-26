@@ -42,6 +42,10 @@ class MessageHandler {
         let sender = msg.message.user.name;
         let channel = msg.message.room;
 
+        console.log('body: ', body);
+        console.log('sender: ', sender);
+        console.log('channel: ', channel);
+
         let links = Helpers.extractLinks(msg.message.text);
         let tags = Helpers.extractTags(msg.message.text);
 
