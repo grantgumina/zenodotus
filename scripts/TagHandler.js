@@ -19,7 +19,7 @@
 *   <github username of the original script author>
 */
 
-const StorageManager = require('./Utilities/StorageManager.js');
+const StorageManager = require('zenodotus-storage-manager');
 
 class TagHandler {
 

@@ -19,16 +19,15 @@
 *   <github username of the original script author>
 */
 
-const StorageManager = require('./Utilities/StorageManager.js');
+const StorageManager = require('zenodotus-storage-manager');
+const Constants = require('./Utilities/Constants.js');
 const Helpers = require('./Utilities/Helpers.js');
 
 class MessageHandler {
 
     constructor(robot) {
         this.robot = robot;
-        let urlRegex = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i;
-        
-        robot.hear(urlRegex, this.storeMessage);
+        robot.hear(Constants.URLREGEX(), this.storeMessage);
         robot.respond(/list-links/i, this.listLinks);
     }
 
@@ -37,14 +36,18 @@ class MessageHandler {
         let domain = msg.robot.server.domain || "shouting.online";
         let room = msg.message.room;
         let id = msg.message.id;
-        let body = msg.message.text;
+
+        // Remove the tags from the message
+        let body = msg.message.text.replace(Constants.TAGREGEX(), '');
+        let sender = msg.message.user.name;
+        let channel = msg.message.room;
 
         let links = Helpers.extractLinks(msg.message.text);
         let tags = Helpers.extractTags(msg.message.text);
 
         var self = this;
 
-        Promise.all([StorageManager.createMessage(body), 
+        Promise.all([StorageManager.createMessage(body, sender, channel), 
             StorageManager.createTags(tags), 
             StorageManager.createLinks(links)])
         .then(function([messageId, tagIds, linkIds]) {
@@ -60,7 +63,6 @@ class MessageHandler {
                     linkIds: linkIds
                 };
             });
-
         }).then(data => {
             // Create tagged-links entries          
             let allLinkIds = data.linkIds.new.concat(data.linkIds.old);

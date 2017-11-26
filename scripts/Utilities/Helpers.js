@@ -1,3 +1,5 @@
+const Constants = require('./Constants.js')
+
 class Helpers {
     constructor() {
 
@@ -16,13 +18,12 @@ class Helpers {
     }
     
     extractLinks(messageText) {
-        let urlRegex = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
-        // "(^|[ \t\r\n])((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))" ,
+        let urlRegex = Constants.URLREGEX();
         return this.extract(urlRegex, messageText);
     }
     
     extractTags(messageText) {
-        let tagRegex = /%([^\s][^0-9][a-z]*)/g;
+        let tagRegex = Constants.TAGREGEX();
         return this.extract(tagRegex, messageText);
     }
 }
