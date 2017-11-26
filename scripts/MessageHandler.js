@@ -42,10 +42,6 @@ class MessageHandler {
         let sender = msg.message.user.name;
         let channel = msg.message.room;
 
-        console.log('body: ', body);
-        console.log('sender: ', sender);
-        console.log('channel: ', channel);
-
         let links = Helpers.extractLinks(msg.message.text);
         let tags = Helpers.extractTags(msg.message.text);
 
@@ -55,10 +51,6 @@ class MessageHandler {
             StorageManager.createTags(tags), 
             StorageManager.createLinks(links)])
         .then(function([messageId, tagIds, linkIds]) {
-            console.log('messageId: ', messageId);
-            console.log('tagIds: ', tagIds.new, tagIds.old);
-            console.log('linkIds: ', linkIds.new, linkIds.old);
-
             // Create tagged-messages entries
             let allTagIds = tagIds.new.concat(tagIds.old);
             return StorageManager.createTaggedMessage(messageId, allTagIds).then(insertedIds => {
@@ -75,6 +67,7 @@ class MessageHandler {
             return StorageManager.createTaggedLinks(allLinkIds, allTagIds);
         }).catch(error => {
             console.log(error);
+            msg.send(error);
         });
 
         let deeplink = domain + '/channel/' + room + '?msg=' + id;
