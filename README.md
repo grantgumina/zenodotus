@@ -10,13 +10,13 @@ available, etc!
 
 ## Getting Started
 Read/follow the instructions below:
-[hubot]: http://hubot.github.com
-[hubot on Heroku]: https://hubot.github.com/docs/deploying/heroku/
-[Rocket.Chat Hubot Adapter]: https://github.com/RocketChat/hubot-rocketchat
-[Setup Postgres Database on Heroku]: https://www.heroku.com/postgres
+1. [hubot](http://hubot.github.com)
+2. [hubot on Heroku](https://hubot.github.com/docs/deploying/heroku/)
+3. [Rocket.Chat Hubot Adapter](https://github.com/RocketChat/hubot-rocketchat)
+4. [Setup Postgres Database on Heroku](https://www.heroku.com/postgres)
 
 ## Environment Variables
 If running this Hubot locally, make sure to export these environment variables
 | Name          | Value                                             |
-|---------------|---------------------------------------------------|
+| ------------- | ------------------------------------------------- |
 | DATABASE_URL  | postgres://user:pass@localhost:5432/database_name |
