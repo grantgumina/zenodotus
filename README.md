@@ -17,6 +17,7 @@ Read/follow the instructions below:
 
 ## Environment Variables
 If running this Hubot locally, make sure to export these environment variables
+
 | Name          | Value                                             |
 | ------------- | ------------------------------------------------- |
 | DATABASE_URL  | postgres://user:pass@localhost:5432/database_name |
