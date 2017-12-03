@@ -28,7 +28,7 @@ class MessageHandler {
 
     constructor(robot) {
         this.robot = robot;
-        robot.hear(Constants.URLREGEX(), this.storeMessage);
+        robot.hear(Constants.TAGREGEX(), this.storeMessage);
         robot.respond(/list-links/i, this.listLinks);
     }
 
@@ -58,7 +58,7 @@ class MessageHandler {
             if(allTagIds.length == 0) {
                 return null;
             }
-            
+
             // Create tagged-messages entries
             return StorageManager.createTaggedMessage(messageId, allTagIds).then(insertedIds => {
                 return {
@@ -71,14 +71,19 @@ class MessageHandler {
                 return null;
             }
 
+            console.log(data);
+
             // Create tagged-links entries          
             let allLinkIds = data.linkIds.new.concat(data.linkIds.old);
             let allTagIds = data.tagIds.new.concat(data.tagIds.old);
-
+            
+            if (allLinkIds.length == 0 || allTagIds == 0) {
+                return null;
+            }
+            
             return StorageManager.createTaggedLinks(allLinkIds, allTagIds);
         }).catch(error => {
             console.log(error);
-            msg.send(error);
         });
 
         msg.send('deeplink: ' + deeplink);

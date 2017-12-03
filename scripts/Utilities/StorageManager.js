@@ -31,7 +31,10 @@ class StorageManager {
 
     createLinks(urls) {
         if (urls.length == 0) {
-            return [];
+            return {
+                old: [],
+                new: []
+            }
         }
 
         return this.insertNewObjectsOnly(urls, 'links', 'url');
@@ -105,6 +108,23 @@ class StorageManager {
             }
 
             return this.bulkInsert(['link_id', 'tag_id'], 'tagged_links', rowsToInsert);
+        });
+    }
+
+    // Get methods
+    getTags() {
+        return this.db.any('SELECT * FROM tags').then(data => {
+            return data;
+        }).catch(error => {
+            return error;
+        });
+    }
+
+    getMessagesForTagId(tagId) {
+        return this.db.any('SELECT * FROM messages WHERE id IN (SELECT message_id FROM tagged_messages WHERE tag_id = $1) ORDER BY created_at ASC', [tagId]).then(data => {
+            return data;
+        }).catch(error => {
+            return error;
         });
     }
 
