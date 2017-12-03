@@ -19,7 +19,8 @@
 *   <github username of the original script author>
 */
 
-const StorageManager = require('zenodotus-storage-manager');
+const StorageManager = require('zenodotus-storage-manager'); // PROD
+// const StorageManager = require('./Utilities/StorageManager.js'); // TEST
 const Constants = require('./Utilities/Constants.js');
 const Helpers = require('./Utilities/Helpers.js');
 
@@ -36,6 +37,7 @@ class MessageHandler {
         let domain = msg.robot.server.domain || "shouting.online";
         let room = msg.message.room;
         let id = msg.message.id;
+        let deeplink = domain + '/channel/' + room + '?msg=' + id;
 
         // Remove the tags from the message
         let body = msg.message.text.replace(Constants.TAGREGEX(), '');
@@ -47,12 +49,17 @@ class MessageHandler {
 
         var self = this;
 
-        Promise.all([StorageManager.createMessage(body, sender, channel), 
+        Promise.all([StorageManager.createMessage(body, sender, channel, deeplink), 
             StorageManager.createTags(tags), 
             StorageManager.createLinks(links)])
         .then(function([messageId, tagIds, linkIds]) {
-            // Create tagged-messages entries
             let allTagIds = tagIds.new.concat(tagIds.old);
+            
+            if(allTagIds.length == 0) {
+                return null;
+            }
+            
+            // Create tagged-messages entries
             return StorageManager.createTaggedMessage(messageId, allTagIds).then(insertedIds => {
                 return {
                     tagIds: tagIds,
@@ -60,6 +67,10 @@ class MessageHandler {
                 };
             });
         }).then(data => {
+            if (data == null) {
+                return null;
+            }
+
             // Create tagged-links entries          
             let allLinkIds = data.linkIds.new.concat(data.linkIds.old);
             let allTagIds = data.tagIds.new.concat(data.tagIds.old);
@@ -70,7 +81,6 @@ class MessageHandler {
             msg.send(error);
         });
 
-        let deeplink = domain + '/channel/' + room + '?msg=' + id;
         msg.send('deeplink: ' + deeplink);
     }
 
