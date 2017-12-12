@@ -86,7 +86,7 @@ class MessageHandler {
             console.log(error);
         });
 
-        msg.send('deeplink: ' + deeplink);
+        // msg.send('deeplink: ' + deeplink);
     }
 
     listLinks(msg) {
