@@ -19,10 +19,10 @@
 *   <github username of the original script author>
 */
 
-const StorageManager = require('zenodotus-storage-manager'); // PROD
+const StorageManager = require('zenodotus-shared/StorageManager'); // PROD
 // const StorageManager = require('./Utilities/StorageManager.js'); // TEST
-const Constants = require('./Utilities/Constants.js');
-const Helpers = require('./Utilities/Helpers.js');
+const Constants = require('zenodotus-shared/Constants');
+const Helpers = require('zenodotus-shared/Helpers');
 
 class MessageHandler {
 
