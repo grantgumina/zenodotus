@@ -33,7 +33,7 @@ class TagHandler {
     deleteTag(msg) {
         let tagName = msg.match[1];
         
-        return StorageManager.deleteTag(tagName).then(result => {
+        return StorageManager.deleteTagForName(tagName).then(result => {
             console.log(result);
             msg.send('Tag deleted: ' + tagName);
         }).catch(error => {
